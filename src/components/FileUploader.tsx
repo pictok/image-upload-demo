@@ -23,7 +23,7 @@ export default function FileUploader() {
     setIsUploading(true);
     const imagePath =
       "https://bmtbohuzvkdifffdwayv.supabase.co/storage/v1/object/public/images/";
-    let imageName = "1/" + `${Math.random()}-${file?.name}`.replace("/", "");
+    const imageName = `${Math.random()}-${file?.name}`.replace("/", "");
 
     if (!imageName) return;
     if (!file) return;
