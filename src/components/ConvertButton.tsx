@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+interface ConvertButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
+  isConverting: boolean;
+}
 
-export default function ConvertButton() {
-  const [isConverting, setIsConverting] = useState(false);
-  const handleConversionToSound = async () => {};
+export default function ConvertButton({
+  isConverting,
+  ...props
+}: ConvertButtonProps) {
   return (
     <button
       disabled={isConverting}
-      onClick={handleConversionToSound}
+      {...props}
       className={
-        " text-white p-5 rounded-xl " +
+        " text-white p-5 rounded-xl mb-5 " +
         (isConverting
           ? "bg-gray-600 opacity-50 cursor-not-allowed"
           : "bg-blue-500")
