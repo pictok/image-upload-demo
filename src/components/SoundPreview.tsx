@@ -3,6 +3,8 @@
 import { useState } from "react";
 import ConvertButton from "./ConvertButton";
 import { supabase } from "@/db/supabase";
+import { getCaption } from "@/helpers/getCaption";
+import { getSound } from "@/helpers/getSound";
 
 export default function SoundPreview({ image }: { image: string }) {
   const [sound, setSound] = useState("");
@@ -10,45 +12,41 @@ export default function SoundPreview({ image }: { image: string }) {
 
   const handleConversionToSound = async () => {
     setIsConverting(true);
-    const res1 = await fetch("/api/generate/classification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ image }),
-    });
 
+    // get caption from image url
+    const res1 = await getCaption(image);
     const data = await res1.json();
-
     const caption = String(data.output);
 
-    const res2 = await fetch("/api/generate/sound", {
-      method: "POST",
-      body: JSON.stringify({ caption }),
-    });
+    // get sound from caption
+    const res2 = await getSound(caption);
     const { output } = await res2.json();
     setSound(output);
+
     const audio = new Audio(output);
     await audio.play();
+
     setIsConverting(false);
+
+    // upload sound to supabase storage
     const res3 = await fetch(output);
     const blob = await res3.blob();
     const audioName = `${Math.random()}.mp3`.replace("/", "");
-
     const { error: SoundUploadError } = await supabase.storage
       .from("audio")
       .upload(audioName, blob);
     if (SoundUploadError) console.log(SoundUploadError);
 
+    // insert image and audio url to supabase
     const audioPath =
       "https://bmtbohuzvkdifffdwayv.supabase.co/storage/v1/object/public/audio/";
-
     const { error: CreateImgAudioLinkError } = await supabase
       .from("image_audio")
       .insert([
         { user_id: 1, image_url: image, audio_url: audioPath + audioName },
       ])
       .select();
+    if (CreateImgAudioLinkError) console.log(CreateImgAudioLinkError);
   };
   return (
     <div>
